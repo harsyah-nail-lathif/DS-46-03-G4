@@ -13,7 +13,7 @@ public class JDBC {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/db_barang", "root", "");
+                    "jdbc:mysql://localhost:3306/minimarket", "root", "");
             stmt = con.createStatement();
             isConnected = true;
             message = "DB connected";
@@ -51,4 +51,10 @@ public class JDBC {
         }
         return rs;
     }
+
+    public ResultSet executeSelect(String query) throws SQLException {
+        PreparedStatement stmt = connection.prepareStatement(query);
+        return stmt.executeQuery();
+    }
+
 }
