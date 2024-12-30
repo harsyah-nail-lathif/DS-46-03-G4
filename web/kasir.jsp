@@ -66,7 +66,6 @@
         <div class="row">
             <!-- Section 1: Add Product & Product Table -->
             <div class="col-md-6">
-                <!-- Add Product Section -->
                 <div class="card mb-3">
                     <div class="card-header"><strong>Add Products</strong></div>
                     <div class="card-body">
