@@ -73,7 +73,11 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-4">
                                         <label class="fw-bold">Kode Barang</label>
-                                        <input type="text" name="kode" class="form-control" placeholder="Masukkan Kode Barang" required>
+                                        <input type="text" name="kode" class="form-control" value="207" placeholder="Masukkan Kode Barang" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="fw-bold">Quantity</label>
+                                        <input type="number" name="quantity" class="form-control" value="1" placeholder="Masukkan jumlah barang" required>
                                     </div>
                                     <div class="col-md-2">
                                         <label class="fw-bold">&nbsp;</label>
@@ -102,10 +106,9 @@
                                 </thead>
                                 <tbody>
                                     <%
-                                        double hargaBarang = (Double) request.getAttribute("hargaBarang"); 
                                         for (HashMap<String, String> product : productList) {
                                             int qty = Integer.parseInt(product.get("quantity"));
-                                            int prc = Integer.parseInt(hargaBarang);
+                                            int prc = Integer.parseInt(product.get("price"));
                                             int amount = qty * prc;
                                     %>
                                     <tr>

@@ -28,6 +28,7 @@ public class kasir extends HttpServlet {
                 if ("src".equals(menu)) {
                     // Mendapatkan kode barang dari request
                     int kode = Integer.parseInt(request.getParameter("kode"));
+                    int quantity = Integer.parseInt(request.getParameter("quantity"));
 
                     // Query untuk mendapatkan harga barang
                     ResultSet rs = db.getData("SELECT harga FROM inventaris_barang WHERE kode = " + kode);
@@ -37,9 +38,10 @@ public class kasir extends HttpServlet {
                     if (rs.next()) {
                         harga = rs.getDouble("harga");
                     }
-
+                    int h = (int) harga;
                     // Mengirimkan harga kembali ke JSP
-                    request.setAttribute("hargaBarang", harga);
+                    System.out.println("debugging nilai h:"+h);
+                    request.setAttribute("hargaBarang", h * quantity);
                     request.getRequestDispatcher("kasir.jsp").forward(request, response);
                 } else if ("del".equals(menu)) {
                     int id = Integer.parseInt(request.getParameter("id"));
