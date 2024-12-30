@@ -51,10 +51,4 @@ public class JDBC {
         }
         return rs;
     }
-
-    public ResultSet executeSelect(String query) throws SQLException {
-        PreparedStatement stmt = connection.prepareStatement(query);
-        return stmt.executeQuery();
-    }
-
 }

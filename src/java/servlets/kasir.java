@@ -30,7 +30,7 @@ public class kasir extends HttpServlet {
                     int kode = Integer.parseInt(request.getParameter("kode"));
 
                     // Query untuk mendapatkan harga barang
-                    ResultSet rs = db.runQuery("SELECT harga FROM inventaris_barang WHERE kode = " + kode);
+                    ResultSet rs = db.getData("SELECT harga FROM inventaris_barang WHERE kode = " + kode);
 
                     // Mengambil hasil query
                     double harga = 0;

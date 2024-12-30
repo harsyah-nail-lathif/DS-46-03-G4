@@ -102,9 +102,10 @@
                                 </thead>
                                 <tbody>
                                     <%
+                                        double hargaBarang = (Double) request.getAttribute("hargaBarang"); 
                                         for (HashMap<String, String> product : productList) {
                                             int qty = Integer.parseInt(product.get("quantity"));
-                                            int prc = Integer.parseInt(product.get("price"));
+                                            int prc = Integer.parseInt(hargaBarang);
                                             int amount = qty * prc;
                                     %>
                                     <tr>
