@@ -36,7 +36,7 @@ public class KasirController extends HttpServlet {
             if (foundKasir != null) {
                 // Kirimkan hasil pencarian ke halaman JSP
                 request.setAttribute("kasir", foundKasir);
-                request.getRequestDispatcher("kasir.jsp").forward(request, response);
+                request.getRequestDispatcher("/kasir.jsp").forward(request, response);
             } else {
                 response.getWriter().println("Barang tidak ditemukan!");
             }
