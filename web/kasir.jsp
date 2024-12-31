@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page import="java.util.ArrayList" %>
-<%@ page import="java.util.List" %>
 <%@ page import="java.util.HashMap" %>
+<%@ page import="java.util.Map" %>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -13,52 +12,52 @@
     </head>
     <body>
         <%
-            // Inisialisasi ArrayList di sesi atau di halaman
-            List<HashMap<String, String>> productList = (List<HashMap<String, String>>) session.getAttribute("productList");
+            // Ambil data produk dari session dan pastikan tipe yang diterima sesuai
+            Object sessionProductList = session.getAttribute("productList");
 
-            if (productList == null) {
-                productList = new ArrayList<>();
+            // Jika data produk belum ada atau tidak sesuai tipe, inisialisasi dengan Map kosong
+            Map<String, Map<String, String>> productList;
+            if (sessionProductList instanceof Map) {
+                productList = (Map<String, Map<String, String>>) sessionProductList;
+            } else {
+                productList = new HashMap<>();
             }
 
-            // Logika untuk menambahkan produk ke dalam list
+            // Logika untuk menambahkan produk ke dalam map
             if ("POST".equalsIgnoreCase(request.getMethod()) && request.getParameter("productCode") != null) {
                 String productCode = request.getParameter("productCode");
                 String quantity = request.getParameter("quantity");
                 String price = request.getParameter("price");
 
                 if (productCode != null && quantity != null && price != null) {
-                    HashMap<String, String> product = new HashMap<>();
+                    Map<String, String> product = new HashMap<>();
                     product.put("productCode", productCode);
                     product.put("quantity", quantity);
                     product.put("price", price);
 
-                    productList.add(product);
+                    // Simpan produk dalam Map berdasarkan kode produk
+                    productList.put(productCode, product);
                     session.setAttribute("productList", productList);
                 }
             }
 
-            // Logika untuk menghapus produk dari list
+            // Logika untuk menghapus produk dari map
             if (request.getParameter("deleteProduct") != null) {
                 String deleteCode = request.getParameter("deleteProduct");
-
-                for (int i = 0; i < productList.size(); i++) {
-                    if (productList.get(i).get("productCode").equals(deleteCode)) {
-                        productList.remove(i);
-                        break;
-                    }
-                }
-
+                productList.remove(deleteCode); // Menghapus produk berdasarkan kode produk
                 session.setAttribute("productList", productList);
             }
 
             // Menghitung total Amount
             int totalAmount = 0;
-            for (HashMap<String, String> product : productList) {
+            for (Map.Entry<String, Map<String, String>> entry : productList.entrySet()) {
+                Map<String, String> product = entry.getValue();
                 int qty = Integer.parseInt(product.get("quantity"));
                 int prc = Integer.parseInt(product.get("price"));
                 totalAmount += qty * prc;
             }
         %>
+
 
         <div class="container mt-4">
             <h2 class="text-center mb-4">Inventory Management System - JSP</h2>
@@ -106,7 +105,8 @@
                                 </thead>
                                 <tbody>
                                     <%
-                                        for (HashMap<String, String> product : productList) {
+                                        for (Map.Entry<String, Map<String, String>> entry : productList.entrySet()) {
+                                            Map<String, String> product = entry.getValue();
                                             int qty = Integer.parseInt(product.get("quantity"));
                                             int prc = Integer.parseInt(product.get("price"));
                                             int amount = qty * prc;
@@ -186,16 +186,4 @@
                             <!-- Tombol Cetak Struk -->
                             <div class="d-flex justify-content-center">
                                 <form method="post" action="printInvoice.jsp" target="_blank">
-                                    <button type="submit" class="btn btn-success">Cetak Struk</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- Bootstrap Bundle JS -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-</html>
+                                    <button type="
