@@ -14,7 +14,7 @@
     <body>
         <%
             // Ambil data produk dari session dan pastikan tipe yang diterima sesuai
-            Object sessionProductList = session.getAttribute("productList");
+            Object sessionProductList = session.getAttribute("foundKasir");
 
             Map<String, Map<String, String>> productList;
             if (sessionProductList instanceof Map) {
@@ -66,6 +66,7 @@
                         <div class="card-header"><strong>Add Products</strong></div>
                         <div class="card-body">
                         <form method="post" action="KasirController">
+                        <form method="get" action="KasirController">
                                 <div class="row align-items-center">
                                     <div class="col-md-4">
                                         <label class="fw-bold">Kode Barang</label>

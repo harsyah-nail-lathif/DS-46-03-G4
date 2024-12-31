@@ -16,6 +16,10 @@
         <servlet-name>transaksiController</servlet-name>
         <url-pattern>/transaksiController</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>KasirController</servlet-name>
+        <url-pattern>/KasirController</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30
