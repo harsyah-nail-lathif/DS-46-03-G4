@@ -4,21 +4,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class Kasir extends ModelKasir<Kasir> {
-
     private String kodeBarang;
     private String name;
     private double price;
 
     public Kasir() {
-        // (#1.2) Sesuaikan nilai table dan primaryKey
-        this.table = "inventarisbarang";
-        this.primaryKey = "kodeBarang";
+        this.table = "inventarisbarang";  // Menggunakan tabel inventarisbarang
+        this.primaryKey = "kodeBarang";   // Primary key adalah kodeBarang
     }
-
+    
     public Kasir(String kodeBarang, String name, double price) {
-        // (#1.3) Sesuaikan nilai table dan primaryKey serta konstruktor dari parameter yang telah diberikan
-        this.table = "product";
-        this.primaryKey = "id";
+        this.table = "inventarisbarang";  // Pastikan menggunakan tabel inventarisbarang
+        this.primaryKey = "kodeBarang";
         this.kodeBarang = kodeBarang;
         this.name = name;
         this.price = price;
@@ -28,10 +25,9 @@ public class Kasir extends ModelKasir<Kasir> {
     public Kasir toModel(ResultSet rs) {
         try {
             return new Kasir(
-                    // (#1.4) Lakukan get resultSet dari tiap parameter kolom yang ada
-                    rs.getString("kodeBarang"),
-                    rs.getString("namaBarang"),
-                    rs.getDouble("hargajual")
+                rs.getString("kodeBarang"),
+                rs.getString("namabarang"),
+                rs.getDouble("hargajual")
             );
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
@@ -39,11 +35,12 @@ public class Kasir extends ModelKasir<Kasir> {
         }
     }
 
-    public String getId() {
-        return this.kodeBarang;
+    // Getter dan Setter
+    public String getKodeBarang() {
+        return kodeBarang;
     }
 
-    public void setId(String kodeBarang) {
+    public void setKodeBarang(String kodeBarang) {
         this.kodeBarang = kodeBarang;
     }
 
@@ -63,8 +60,13 @@ public class Kasir extends ModelKasir<Kasir> {
         this.price = price;
     }
 
-    public Kasir findByKodeBarang(String kodeBarang) {
-        return this.find(kodeBarang);
+    // Menambahkan fungsi pencarian barang berdasarkan kodeBarang
+    public Kasir findProductByCode(String kodeBarang) {
+        try {
+            return find(kodeBarang);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
-
 }
