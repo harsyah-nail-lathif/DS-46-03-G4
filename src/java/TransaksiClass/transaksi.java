@@ -13,13 +13,13 @@ import java.util.logging.Logger;
  * Class transaksi tanpa bergantung pada ModelTransaksi
  */
 public class transaksi {
-    private int id;
+    private String id;
     private Date tanggalTransaksi;
     private double totalHarga;
     private String kasirID;
     private ArrayList<detailTransaksi> detailTransaksiList;
-    private final String table = "transaksi";
-    private final String primaryKey = "id";
+    private final String table;
+    private final String primaryKey;
     private Connection con;
     private String message;
 
@@ -31,10 +31,12 @@ public class transaksi {
         } catch (ClassNotFoundException | SQLException e) {
             message = e.getMessage();
         }
+        this.table = "transaksi";
+        this.primaryKey = "id";
         this.detailTransaksiList = new ArrayList<>();
     }
 
-    public transaksi(int id, Date tanggalTransaksi, double totalHarga, String kasirID) {
+    public transaksi(String id, Date tanggalTransaksi, double totalHarga, String kasirID) {
         this();
         this.id = id;
         this.tanggalTransaksi = tanggalTransaksi;
@@ -59,7 +61,7 @@ public class transaksi {
             // Mendapatkan ID transaksi yang baru disimpan
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    this.id = generatedKeys.getInt(1);
+                    this.id = generatedKeys.getString(1);
                 }
             }
         }
@@ -78,7 +80,7 @@ public class transaksi {
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 transaksi tr = new transaksi(
-                        rs.getInt("id"),
+                        rs.getString("id"),
                         rs.getDate("tanggal_transaksi"),
                         rs.getDouble("total_harga"),
                         rs.getString("kasir_id")
@@ -95,7 +97,7 @@ public class transaksi {
     public transaksi toModel(ResultSet rs) {
         try {
             return new transaksi(
-                rs.getInt("id"),
+                rs.getString("id"),
                 rs.getDate("tanggal_transaksi"),
                 rs.getDouble("total_harga"),
                 rs.getString("kasir_id")
@@ -107,7 +109,7 @@ public class transaksi {
     }
 
     // Getters and setters
-    public int getId() {
+    public String getId() {
         return id;
     }
 
@@ -127,7 +129,7 @@ public class transaksi {
         return detailTransaksiList;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

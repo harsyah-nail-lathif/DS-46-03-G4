@@ -65,7 +65,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         String transaksiId = request.getParameter("transaksiId");
         if (transaksiId != null && !transaksiId.isEmpty()) {
             try {
-                int id = Integer.parseInt(transaksiId);
+                String id = transaksiId;
                 detailTransaksi dt = new detailTransaksi();
                 ArrayList<detailTransaksi> detailList = dt.getDetailsByTransaksiId(id);
                 tr.setDetailTransaksiList(detailList);

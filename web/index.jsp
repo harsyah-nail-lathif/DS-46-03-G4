@@ -12,7 +12,7 @@
             <h1>Hello World!</h1>
             <!-- Button to go to kasir.jsp -->
             <a href="kasir.jsp" class="btn btn-primary mt-4">Go to Kasir</a>
-            <a href="storage/transaksi.jsp" class="btn btn-primary mt-4"> Go to Transaksi</a>
+            <a href="transaksiController?action=null" class="btn btn-primary mt-4"> Go to Transaksi</a>
         </div>
 
         <!-- Bootstrap JS and dependencies -->

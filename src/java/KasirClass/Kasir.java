@@ -10,12 +10,12 @@ public class Kasir extends ModelKasir<Kasir> {
 
     public Kasir() {
         this.table = "inventarisbarang";  // Menggunakan tabel inventarisbarang
-        this.primaryKey = "kodeBarang";   // Primary key adalah kodeBarang
+        this.primaryKey = "kodebarang";   // Primary key adalah kodeBarang
     }
     
     public Kasir(String kodeBarang, String name, double price) {
         this.table = "inventarisbarang";  // Pastikan menggunakan tabel inventarisbarang
-        this.primaryKey = "kodeBarang";
+        this.primaryKey = "kodebarang";
         this.kodeBarang = kodeBarang;
         this.name = name;
         this.price = price;
@@ -25,9 +25,9 @@ public class Kasir extends ModelKasir<Kasir> {
     public Kasir toModel(ResultSet rs) {
         try {
             return new Kasir(
-                rs.getString("kodeBarang"),
+                rs.getString("kodebarang"),
                 rs.getString("namabarang"),
-                rs.getDouble("hargajual")
+                rs.getDouble("hargabeli")
             );
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());

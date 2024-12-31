@@ -13,11 +13,12 @@ import java.util.logging.Logger;
  * Class detailTransaksi tanpa bergantung pada ModelTransaksi
  */
 public class detailTransaksi {
-    private int id;
+    private String id;
     private String barangID;
     private int jumlah;
     private double harga;
-    private final String table = "detail_transaksi";
+    private String table;
+    private String primary;
     private Connection con;
     private String message;
 
@@ -29,9 +30,11 @@ public class detailTransaksi {
         } catch (ClassNotFoundException | SQLException e) {
             message = e.getMessage();
         }
+        this.table = "detail_transaksi";
+        this.primary = "id";
     }
 
-    public detailTransaksi(int id, String barang, int jumlah, double harga) {
+    public detailTransaksi(String id, String barang, int jumlah, double harga) {
         this.id = id;
         this.barangID = barang;
         this.jumlah = jumlah;
@@ -39,10 +42,10 @@ public class detailTransaksi {
     }
 
     // Simpan detail transaksi ke database
-    public void simpanDetail(int transaksiId) {
+    public void simpanDetail(String transaksiId) {
         String query = "INSERT INTO " + table + " (transaksi_id, barang, jumlah, harga) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(query)) {
-            ps.setInt(1, transaksiId);
+            ps.setString(1, transaksiId);
             ps.setString(2, barangID);
             ps.setInt(3, jumlah);
             ps.setDouble(4, harga);
@@ -53,15 +56,15 @@ public class detailTransaksi {
     }
 
     // Mendapatkan semua detail transaksi berdasarkan transaksiId
-    public ArrayList<detailTransaksi> getDetailsByTransaksiId(int transaksiId) {
+    public ArrayList<detailTransaksi> getDetailsByTransaksiId(String transaksiId) {
         ArrayList<detailTransaksi> details = new ArrayList<>();
         String query = "SELECT * FROM detail_transaksi WHERE transaksi_id = ?";
         try (PreparedStatement ps = con.prepareStatement(query)) {
-            ps.setInt(1, transaksiId);
+            ps.setString(1, transaksiId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     detailTransaksi detail = new detailTransaksi(
-                        rs.getInt("id"),
+                        rs.getString("id"),
                         rs.getString("barang"),
                         rs.getInt("jumlah"),
                         rs.getDouble("harga")
@@ -79,7 +82,7 @@ public class detailTransaksi {
     public detailTransaksi toModel(ResultSet rs) {
         try {
             return new detailTransaksi(
-                rs.getInt("id"),
+                rs.getString("id"),
                 rs.getString("barang"),
                 rs.getInt("jumlah"),
                 rs.getDouble("harga")
@@ -91,7 +94,7 @@ public class detailTransaksi {
     }
 
     // Getters and setters
-    public int getId() {
+    public String getId() {
         return id;
     }
 
