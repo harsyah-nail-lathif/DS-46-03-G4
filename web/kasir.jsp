@@ -65,7 +65,7 @@
                     <div class="card mb-3">
                         <div class="card-header"><strong>Add Products</strong></div>
                         <div class="card-body">
-                        <form method="post" action="kasir">
+                        <form method="post" action="/kasirController">
                                 <div class="row align-items-center">
                                     <div class="col-md-4">
                                         <label class="fw-bold">Kode Barang</label>
