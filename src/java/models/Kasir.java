@@ -1,9 +1,9 @@
-package KasirClass;
+package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class Kasir extends ModelKasir<Kasir> {
+public class Kasir extends Model<Kasir> {
     private String kodeBarang;
     private String name;
     private double price;
@@ -27,7 +27,7 @@ public class Kasir extends ModelKasir<Kasir> {
             return new Kasir(
                 rs.getString("kodebarang"),
                 rs.getString("namabarang"),
-                rs.getDouble("hargabeli")
+                rs.getDouble("hargajual")
             );
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
