@@ -20,7 +20,7 @@ import models.InventarisBarang;
  *
  * @author jismi
  */
-@WebServlet(name = "InventarisBarangController", urlPatterns = {"/InventarisBarangController"})
+@WebServlet(name = "InventarisBarangController", urlPatterns = {"/inventaris"})
 public class InventarisBarangController extends HttpServlet {
 
     @Override

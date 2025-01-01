@@ -8,12 +8,16 @@ package models;
  *
  * @author LENOVO
  */
-
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
 public class InventarisBarang extends Model<InventarisBarang> {
+
     private String kodeBarang;
     private String namaBarang;
     private int stok;
@@ -41,12 +45,12 @@ public class InventarisBarang extends Model<InventarisBarang> {
     public InventarisBarang toModel(ResultSet rs) {
         try {
             return new InventarisBarang(
-                rs.getString("kodeBarang"),
-                rs.getString("namaBarang"),
-                rs.getInt("stok"),
-                rs.getDouble("hargaBeli"),
-                rs.getDouble("hargaJual"),
-                rs.getDate("tanggalMasuk").toLocalDate()
+                    rs.getString("kodeBarang"),
+                    rs.getString("namaBarang"),
+                    rs.getInt("stok"),
+                    rs.getDouble("hargaBeli"),
+                    rs.getDouble("hargaJual"),
+                    rs.getDate("tanggalMasuk").toLocalDate()
             );
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
@@ -101,5 +105,16 @@ public class InventarisBarang extends Model<InventarisBarang> {
     public void setTanggalMasuk(LocalDate tanggalMasuk) {
         this.tanggalMasuk = tanggalMasuk;
     }
-}
 
+    public void kurangiStok(String kodeBarang, int jumlah) throws SQLException {
+        String query = "UPDATE inventarisbarang SET stok = stok - ? WHERE kodebarang = ?";
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", ""); PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setInt(1, jumlah);
+            ps.setString(2, kodeBarang);
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("Gagal mengurangi stok. Kode barang tidak ditemukan: " + kodeBarang);
+            }
+        }
+    }
+}
