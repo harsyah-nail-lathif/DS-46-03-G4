@@ -41,8 +41,23 @@
                 balance = paidAmount - totalAmount;
             }
 
+            // Simpan productList ke session
             session.setAttribute("productList", productList);
         %>
+
+        <!-- result.jsp -->
+        <% if (request.getAttribute("successMessage") != null) {%>
+        <div class="alert alert-success">
+            <%= request.getAttribute("successMessage")%>
+        </div>
+        <% } %>
+
+        <% if (request.getAttribute("errorMessage") != null) {%>
+        <div class="alert alert-danger">
+            <%= request.getAttribute("errorMessage")%>
+        </div>
+        <% } %>
+
 
         <div class="container mt-4">
             <h2 class="text-center mb-4">Halaman Kasir</h2>
@@ -161,9 +176,9 @@
                         <a href="transaksiController?action=view" class="btn btn-primary">Lihat Transaksi</a>
                     </div>
                     <div class="text-end mb-3">
-                        <form method="GET" action="kasir.jsp">
+                        <form method="POST" action="KasirController">
                             <input type="hidden" name="action" value="submitTransaction">
-                            <input type="hidden" name="totalAmount" value="<%= totalAmount%>"> <!-- Total transaksi -->
+                            <input type="hidden" name="productList" value="<%= productList%>"> <!-- Menambahkan productList ke form -->
                             <button type="submit" class="btn btn-primary mt-3">Submit Transaksi</button>
                         </form>
                     </div>
