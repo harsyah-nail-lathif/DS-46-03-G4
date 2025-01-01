@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package TransaksiClass;
+package models;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import java.util.logging.Logger;
  * Class transaksi tanpa bergantung pada ModelTransaksi
  */
 public class transaksi {
+
     private String id;
     private Date tanggalTransaksi;
     private double totalHarga;
@@ -26,7 +27,7 @@ public class transaksi {
     public transaksi() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/minimarket", "root", "");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", "");
             message = "Database connected.";
         } catch (ClassNotFoundException | SQLException e) {
             message = e.getMessage();
@@ -50,25 +51,32 @@ public class transaksi {
     }
 
     // Simpan transaksi utama dan detail ke database
-    public void simpanTransaksi(Connection connection) throws SQLException {
-        String insertQuery = "INSERT INTO " + table + " (tanggal_transaksi, total_harga, kasir_id) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setDate(1, tanggalTransaksi);
-            ps.setDouble(2, totalHarga);
-            ps.setString(3, kasirID);
-            ps.executeUpdate();
+    public void simpanTransaksi() throws SQLException {
+        // Membuat koneksi langsung
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", "")) {
+            // Simpan transaksi utama
+            String query = "INSERT INTO " + table + " (tanggal_transaksi, total_harga, kasir_id) VALUES (?, ?, ?)";
+            try (PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setDate(1, tanggalTransaksi);
+                ps.setDouble(2, totalHarga);
+                ps.setString(3, kasirID);
+                ps.executeUpdate();
 
-            // Mendapatkan ID transaksi yang baru disimpan
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    this.id = generatedKeys.getString(1);
+                // Mendapatkan ID transaksi yang baru disimpan
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        this.id = generatedKeys.getString(1);
+                    }
                 }
             }
-        }
 
-        // Simpan semua detail transaksi
-        for (detailTransaksi detail : detailTransaksiList) {
-            detail.simpanDetail(id);
+            // Simpan semua detail transaksi
+            for (detailTransaksi detail : detailTransaksiList) {
+                detail.simpanDetail(con, this.id); // Kirim koneksi ke detailTransaksi
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e; // Operkan error ke controller jika terjadi
         }
     }
 
@@ -76,8 +84,7 @@ public class transaksi {
     public ArrayList<transaksi> getAll() {
         ArrayList<transaksi> transaksiList = new ArrayList<>();
         String query = "SELECT * FROM transaksi";
-        try (PreparedStatement ps = con.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = con.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 transaksi tr = new transaksi(
                         rs.getString("id"),
@@ -97,10 +104,10 @@ public class transaksi {
     public transaksi toModel(ResultSet rs) {
         try {
             return new transaksi(
-                rs.getString("id"),
-                rs.getDate("tanggal_transaksi"),
-                rs.getDouble("total_harga"),
-                rs.getString("kasir_id")
+                    rs.getString("id"),
+                    rs.getDate("tanggal_transaksi"),
+                    rs.getDouble("total_harga"),
+                    rs.getString("kasir_id")
             );
         } catch (SQLException e) {
             Logger.getLogger(transaksi.class.getName()).log(Level.SEVERE, null, e);
@@ -133,7 +140,7 @@ public class transaksi {
         this.id = id;
     }
 
-    public void setTanggalTransaksi(Date tanggalTransaksi) {
+    public void setTanggalTransaksi(java.sql.Date tanggalTransaksi) {
         this.tanggalTransaksi = tanggalTransaksi;
     }
 
@@ -148,4 +155,5 @@ public class transaksi {
     public void setDetailTransaksiList(ArrayList<detailTransaksi> detailTransaksiList) {
         this.detailTransaksiList = detailTransaksiList;
     }
+
 }

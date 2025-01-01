@@ -1,5 +1,8 @@
-package KasirClass;
-
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package models;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,12 +12,16 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 /**
+ * Model abstrak untuk semua entitas database.
  *
- *
- * @param <E>
+ * @param <E> Tipe entitas
  */
-public abstract class ModelKasir<E> {
 
+/**
+ *
+ * @author LENOVO
+ */
+public abstract class Model<E> {
     private Connection con;
     private Statement stmt;
     private boolean isConnected;
@@ -28,12 +35,11 @@ public abstract class ModelKasir<E> {
 
     public void connect() {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            // (#1.1) Sesuaikan formatting con dengan nama DB anda
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/minimarket", "root", "");
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", "");
             stmt = con.createStatement();
             isConnected = true;
-            message = "Database Terkoneksi";
+            message = "Database terkoneksi";
         } catch (ClassNotFoundException | SQLException e) {
             isConnected = false;
             message = e.getMessage();
@@ -42,8 +48,8 @@ public abstract class ModelKasir<E> {
 
     public void disconnect() {
         try {
-            stmt.close();
-            con.close();
+            if (stmt != null) stmt.close();
+            if (con != null) con.close();
         } catch (SQLException e) {
             message = e.getMessage();
         }
@@ -58,13 +64,14 @@ public abstract class ModelKasir<E> {
                 Object value = field.get(this);
                 if (value != null) {
                     cols += field.getName() + ", ";
-                    values += value + "', '";
+                    values += "'" + value + "', ";
                 }
             }
-            int result = stmt.executeUpdate("INSERT INTO " + table + "(" + cols.substring(0, cols.length() - 2) + ")"
-                    + " VALUES ('" + values.substring(0, values.length() - 4) + "')");
-            message = "info insert: " + result + " rows affected";
-        } catch (IllegalAccessException | IllegalArgumentException | SecurityException | SQLException e) {
+            String query = "INSERT INTO " + table + "(" + cols.substring(0, cols.length() - 2) + ") VALUES (" +
+                    values.substring(0, values.length() - 2) + ")";
+            int result = stmt.executeUpdate(query);
+            message = "Info insert: " + result + " baris berhasil ditambahkan.";
+        } catch (IllegalAccessException | SQLException e) {
             message = e.getMessage();
         } finally {
             disconnect();
@@ -75,7 +82,7 @@ public abstract class ModelKasir<E> {
         try {
             connect();
             String values = "";
-            Object pkValue = 0;
+            Object pkValue = null;
             for (Field field : this.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 Object value = field.get(this);
@@ -85,10 +92,11 @@ public abstract class ModelKasir<E> {
                     values += field.getName() + " = '" + value + "', ";
                 }
             }
-            int result = stmt.executeUpdate("UPDATE " + table + " SET " + values.substring(0, values.length() - 2)
-                    + " WHERE " + primaryKey + " = '" + pkValue + "'");
-            message = "info update: " + result + " rows affected";
-        } catch (IllegalAccessException | IllegalArgumentException | SecurityException | SQLException e) {
+            String query = "UPDATE " + table + " SET " + values.substring(0, values.length() - 2) +
+                    " WHERE " + primaryKey + " = '" + pkValue + "'";
+            int result = stmt.executeUpdate(query);
+            message = "Info update: " + result + " baris berhasil diperbarui.";
+        } catch (IllegalAccessException | SQLException e) {
             message = e.getMessage();
         } finally {
             disconnect();
@@ -98,7 +106,7 @@ public abstract class ModelKasir<E> {
     public void delete() {
         try {
             connect();
-            Object pkValue = 0;
+            Object pkValue = null;
             for (Field field : this.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 if (field.getName().equals(primaryKey)) {
@@ -106,27 +114,14 @@ public abstract class ModelKasir<E> {
                     break;
                 }
             }
-            int result = stmt.executeUpdate("DELETE FROM " + table + " WHERE " + primaryKey + " = '" + pkValue + "'");
-            message = "info delete: " + result + " rows affected";
-        } catch (IllegalAccessException | IllegalArgumentException | SecurityException | SQLException e) {
+            String query = "DELETE FROM " + table + " WHERE " + primaryKey + " = '" + pkValue + "'";
+            int result = stmt.executeUpdate(query);
+            message = "Info delete: " + result + " baris berhasil dihapus.";
+        } catch (IllegalAccessException | SQLException e) {
             message = e.getMessage();
         } finally {
             disconnect();
         }
-    }
-
-    ArrayList<Object> toRow(ResultSet rs) {
-        ArrayList<Object> res = new ArrayList<>();
-        int i = 1;
-        try {
-            while (true) {
-                res.add(rs.getObject(i));
-                i++;
-            }
-        } catch (SQLException e) {
-
-        }
-        return res;
     }
 
     public ArrayList<ArrayList<Object>> query(String query) {
@@ -135,7 +130,11 @@ public abstract class ModelKasir<E> {
             connect();
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-                res.add(toRow(rs));
+                ArrayList<Object> row = new ArrayList<>();
+                for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+                    row.add(rs.getObject(i));
+                }
+                res.add(row);
             }
         } catch (SQLException e) {
             message = e.getMessage();
@@ -145,22 +144,14 @@ public abstract class ModelKasir<E> {
         return res;
     }
 
-    abstract E toModel(ResultSet rs);
-
     public ArrayList<E> get() {
         ArrayList<E> res = new ArrayList<>();
         try {
-            this.connect();
+            connect();
             String query = "SELECT " + select + " FROM " + table;
-            if (!join.equals("")) {
-                query += join;
-            }
-            if (!where.equals("")) {
-                query += " WHERE " + where;
-            }
-            if (!otherQuery.equals("")) {
-                query += " " + otherQuery;
-            }
+            if (!join.isEmpty()) query += join;
+            if (!where.isEmpty()) query += " WHERE " + where;
+            if (!otherQuery.isEmpty()) query += " " + otherQuery;
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 res.add(toModel(rs));
@@ -169,10 +160,7 @@ public abstract class ModelKasir<E> {
             message = e.getMessage();
         } finally {
             disconnect();
-            select = "*";
-            where = "";
-            join = "";
-            otherQuery = "";
+            resetQuery();
         }
         return res;
     }
@@ -189,54 +177,38 @@ public abstract class ModelKasir<E> {
             message = e.getMessage();
         } finally {
             disconnect();
-            select = "*";
+            resetQuery();
         }
         return null;
     }
 
-    // Fungsi untuk mencari produk berdasarkan kodeBarang
-    public Kasir findProductByCode(String kodeBarang) {
-        try {
-            connect();
-            String query = "SELECT kodeBarang, namabarang, hargajual FROM " + table + " WHERE kodeBarang = '" + kodeBarang + "'";
-            ResultSet rs = stmt.executeQuery(query);
-            if (rs.next()) {
-                return (Kasir) toModel(rs); // Mengembalikan produk yang ditemukan
-            }
-        } catch (SQLException e) {
-            message = e.getMessage();
-        } finally {
-            disconnect();
-        }
-        return null; // Jika produk tidak ditemukan
+    private void resetQuery() {
+        select = "*";
+        where = "";
+        join = "";
+        otherQuery = "";
     }
 
-    public void select(String cols) {
-        select = cols;
-    }
-
-    public void join(String table, String on) {
-        join += " JOIN " + table + " ON " + on;
-    }
-
-    public void where(String cond) {
-        where = cond;
-    }
-
-    public void addQuery(String query) {
-        otherQuery = query;
-    }
-
-    public boolean isConnected() {
-        return isConnected;
-    }
+    abstract E toModel(ResultSet rs);
 
     public String getMessage() {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public boolean isConnected() {
+        return isConnected;
+    }
+    
+    public void setWhere(String where) {
+        this.where = where;
     }
 
+    public void setJoin(String join) {
+        this.join = join;
+    }
+
+    public void setOtherQuery(String otherQuery) {
+        this.otherQuery = otherQuery;
+    }
+    
 }

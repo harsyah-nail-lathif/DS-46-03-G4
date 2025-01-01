@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package TransaksiClass;
+package models;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import java.util.logging.Logger;
  * Class detailTransaksi tanpa bergantung pada ModelTransaksi
  */
 public class detailTransaksi {
+
     private String id;
     private String barangID;
     private int jumlah;
@@ -25,7 +26,7 @@ public class detailTransaksi {
     public detailTransaksi() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/minimarket", "root", "");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", "");
             message = "Database connected.";
         } catch (ClassNotFoundException | SQLException e) {
             message = e.getMessage();
@@ -42,7 +43,7 @@ public class detailTransaksi {
     }
 
     // Simpan detail transaksi ke database
-    public void simpanDetail(String transaksiId) {
+    public void simpanDetail(Connection con, String transaksiId) throws SQLException {
         String query = "INSERT INTO " + table + " (transaksi_id, barang, jumlah, harga) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(query)) {
             ps.setString(1, transaksiId);
@@ -51,7 +52,8 @@ public class detailTransaksi {
             ps.setDouble(4, harga);
             ps.executeUpdate();
         } catch (SQLException e) {
-            Logger.getLogger(detailTransaksi.class.getName()).log(Level.SEVERE, null, e);
+            e.printStackTrace();
+            throw e; // Operkan error jika terjadi
         }
     }
 
@@ -64,10 +66,10 @@ public class detailTransaksi {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     detailTransaksi detail = new detailTransaksi(
-                        rs.getString("id"),
-                        rs.getString("barang"),
-                        rs.getInt("jumlah"),
-                        rs.getDouble("harga")
+                            rs.getString("id"),
+                            rs.getString("barang"),
+                            rs.getInt("jumlah"),
+                            rs.getDouble("harga")
                     );
                     details.add(detail);
                 }
@@ -82,10 +84,10 @@ public class detailTransaksi {
     public detailTransaksi toModel(ResultSet rs) {
         try {
             return new detailTransaksi(
-                rs.getString("id"),
-                rs.getString("barang"),
-                rs.getInt("jumlah"),
-                rs.getDouble("harga")
+                    rs.getString("id"),
+                    rs.getString("barang"),
+                    rs.getInt("jumlah"),
+                    rs.getDouble("harga")
             );
         } catch (SQLException e) {
             Logger.getLogger(detailTransaksi.class.getName()).log(Level.SEVERE, null, e);
@@ -122,4 +124,3 @@ public class detailTransaksi {
         this.harga = harga;
     }
 }
-

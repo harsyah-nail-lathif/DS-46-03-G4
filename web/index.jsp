@@ -1,24 +1,42 @@
+<%-- 
+    Document   : index
+    Created on : Dec 30, 2024, 3:46:00 PM
+    Author     : LENOVO
+--%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
-        <!-- Bootstrap CSS -->
-        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class="container text-center mt-5">
-            <h1>Hello World!</h1>
-            <!-- Button to go to kasir.jsp -->
-            <a href="kasir.jsp" class="btn btn-primary mt-4">Go to Kasir</a>
-            <a href="transaksiController?action=null" class="btn btn-primary mt-4"> Go to Transaksi</a>
+<html lang="id">
+<head>
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h2>Login</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="<%= request.getContextPath() %>/AuthController">
+                    <input type="hidden" name="action" value="login">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name="username" placeholder="Username" required>
+                        <label>Username</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" name="password" placeholder="Password" required>
+                        <label>Password</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+                <% if (request.getParameter("error") != null) { %>
+                <div class="alert alert-danger mt-3 text-center">
+                    Username atau password salah!
+                </div>
+                <% } %>
+            </div>
         </div>
-
-        <!-- Bootstrap JS and dependencies -->
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    </body>
+    </div>
+</body>
 </html>
-

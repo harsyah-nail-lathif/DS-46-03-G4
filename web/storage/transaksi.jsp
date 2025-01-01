@@ -12,7 +12,7 @@
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="TransaksiClass.transaksi" %>
+<%@ page import="models.transaksi" %>
 <% 
     ArrayList<transaksi> transaksiList = (ArrayList<transaksi>) request.getAttribute("transaksi");
 %>
@@ -73,6 +73,18 @@
         .btn-edit:hover {
             background-color: #0056b3;
         }
+        .back-button {
+            margin-top: 20px;
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
     </style>
     <script>
         // Simpan posisi scroll sebelum berpindah halaman
@@ -129,6 +141,9 @@
                 <% } %>
             </tbody>
         </table>
+        <div>
+            <a href="kasir.jsp" class="back-button">Back</a>
+        </div>
     </div>
 </body>
 </html>
