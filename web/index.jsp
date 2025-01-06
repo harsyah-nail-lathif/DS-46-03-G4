@@ -1,9 +1,3 @@
-<%-- 
-    Document   : index
-    Created on : Dec 30, 2024, 3:46:00 PM
-    Author     : LENOVO
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="id">
@@ -35,6 +29,10 @@
                     Username atau password salah!
                 </div>
                 <% } %>
+            </div>
+            <div class="card-footer text-center">
+                <!-- Tombol Registrasi -->
+                <a href="<%= request.getContextPath() %>/register.jsp" class="btn btn-secondary">Registrasi</a>
             </div>
         </div>
     </div>

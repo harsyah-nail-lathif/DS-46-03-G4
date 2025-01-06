@@ -21,11 +21,12 @@ import models.InventarisBarang;
  */
 @WebServlet(name = "InventarisBarangController", urlPatterns = {"/inventaris"})
 public class InventarisBarangController extends HttpServlet {
-@Override
+
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        if (session.getAttribute("user") == null) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null || !"inventaris".equals(session.getAttribute("role"))) {
             response.sendRedirect("index.jsp");
             return;
         }
@@ -113,4 +114,5 @@ public class InventarisBarangController extends HttpServlet {
 
         response.sendRedirect("inventaris?menu=view");
     }
+
 }

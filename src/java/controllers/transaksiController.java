@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import models.InventarisBarang;
 import models.detailTransaksi;
 import models.transaksi;
 
@@ -61,45 +62,52 @@ public class transaksiController extends HttpServlet {
         String action = request.getParameter("action");
 
         if ("submitTransaction".equals(action)) {
-            // Ambil data transaksi
-            double totalAmount = Double.parseDouble(request.getParameter("totalAmount"));
-            String kasirID = (String) session.getAttribute("user");
-            // Ambil tanggal transaksi sebagai java.util.Date
-            Date tanggalTransaksiUtil = new Date(); // Ini menghasilkan java.util.Date
-
-// Konversi ke java.sql.Date
-            java.sql.Date tanggalTransaksi = new java.sql.Date(tanggalTransaksiUtil.getTime());
-
-// Atur tanggal transaksi ke objek transaksi
             transaksi tr = new transaksi();
-            tr.setTanggalTransaksi(tanggalTransaksi); // Gunakan java.sql.Date
+            tr.setTanggalTransaksi(java.sql.Date.valueOf(LocalDate.now()));
+            tr.setKasirID("kasir");
+            tr.setId(tr.getMaxId());
 
-            tr.setTotalHarga(totalAmount);
-            tr.setKasirID(kasirID);
-
-            // Ambil daftar barang dari session
             Map<String, Map<String, String>> productList = (Map<String, Map<String, String>>) session.getAttribute("productList");
-            if (productList != null) {
-                for (Map.Entry<String, Map<String, String>> entry : productList.entrySet()) {
-                    Map<String, String> product = entry.getValue();
-                    detailTransaksi detail = new detailTransaksi();
-                    detail.setBarangID(product.get("productCode"));
-                    detail.setJumlah(Integer.parseInt(product.get("quantity")));
-                    detail.setHarga(Double.parseDouble(product.get("price")));
-                    tr.tambahDetailTransaksi(detail);
-                }
+            if (productList == null || productList.isEmpty()) {
+                request.setAttribute("error", "Keranjang belanja kosong.");
+                request.getRequestDispatcher("kasir.jsp").forward(request, response);
+                return;
             }
 
-            // Simpan transaksi ke database
+            double totalHarga = 0;
+            InventarisBarang inventarisBarang = new InventarisBarang();
+            for (Map.Entry<String, Map<String, String>> entry : productList.entrySet()) {
+                Map<String, String> product = entry.getValue();
+                detailTransaksi detail = new detailTransaksi();
+                
+                detail.setBarangID(product.get("productCode"));
+                detail.setJumlah(Integer.parseInt(product.get("quantity")));
+                detail.setHarga(Double.parseDouble(product.get("price")));
+                totalHarga += detail.getJumlah() * detail.getHarga();
+                tr.tambahDetailTransaksi(detail);
+
+                // Kurangi stok
+                try {
+                    inventarisBarang.kurangiStok(product.get("productCode"), Integer.parseInt(product.get("quantity")));
+                } catch (SQLException e) {
+                    request.setAttribute("error", "Gagal mengurangi stok untuk barang: " + product.get("productCode") + " - " + e.getMessage());
+                    request.getRequestDispatcher("kasir.jsp").forward(request, response);
+                    return;
+                }
+            }
+            totalHarga = (double)session.getAttribute("totalPrice");
+            tr.setTotalHarga(totalHarga);
+            response.getWriter().println(totalHarga);
+
             try {
                 tr.simpanTransaksi();
-                session.removeAttribute("productList"); // Reset keranjang belanja setelah transaksi selesai
-                response.sendRedirect("transaksiController?action=view"); // Redirect ke halaman transaksi
-            } catch (SQLException e) {
+                session.removeAttribute("productList");
+                response.sendRedirect("transaksiController?action=view");
+            } catch (Exception e) {
                 request.setAttribute("error", "Gagal menyimpan transaksi: " + e.getMessage());
                 request.getRequestDispatcher("kasir.jsp").forward(request, response);
             }
         }
-    }
 
+    }
 }

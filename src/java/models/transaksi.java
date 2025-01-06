@@ -51,34 +51,47 @@ public class transaksi {
     }
 
     // Simpan transaksi utama dan detail ke database
-    public void simpanTransaksi() throws SQLException {
-        // Membuat koneksi langsung
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", "")) {
-            // Simpan transaksi utama
-            String query = "INSERT INTO " + table + " (tanggal_transaksi, total_harga, kasir_id) VALUES (?, ?, ?)";
-            try (PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setDate(1, tanggalTransaksi);
-                ps.setDouble(2, totalHarga);
-                ps.setString(3, kasirID);
-                ps.executeUpdate();
+    public void simpanTransaksi() throws Exception {
+    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", ""); // Pastikan koneksi tersedia
+    try {
+        //con.setAutoCommit(false); // Disable autocommit to manage transactions manually
 
-                // Mendapatkan ID transaksi yang baru disimpan
-                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        this.id = generatedKeys.getString(1);
-                    }
-                }
-            }
+        // Simpan transaksi utama
+        String insertTransaksi = "INSERT INTO transaksi (id, tanggal_transaksi, total_harga, kasir_id) VALUES (?, ?, ?, ?)";
+        PreparedStatement pstmt = con.prepareStatement(insertTransaksi, Statement.RETURN_GENERATED_KEYS);
+        pstmt.setString(1, getMaxId());
+        pstmt.setDate(2, this.tanggalTransaksi);
+        pstmt.setDouble(3, this.totalHarga);
+        pstmt.setString(4, this.kasirID);
+        pstmt.executeUpdate();
 
-            // Simpan semua detail transaksi
-            for (detailTransaksi detail : detailTransaksiList) {
-                detail.simpanDetail(con, this.id); // Kirim koneksi ke detailTransaksi
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw e; // Operkan error ke controller jika terjadi
+        // Simpan detail transaksi
+        String insertDetail = "INSERT INTO detail_transaksi (id, transaksi_id, barang, jumlah, harga) VALUES (?, ?, ?, ?, ?)";
+        PreparedStatement detailStmt = con.prepareStatement(insertDetail);
+        
+        int i = 1;
+        for (detailTransaksi detail : detailTransaksiList) {
+            detailStmt.setString(1, String.valueOf(i));
+            detailStmt.setString(2, this.id);
+            detailStmt.setString(3, detail.getBarangID());
+            detailStmt.setInt(4, detail.getJumlah());
+            detailStmt.setDouble(5, detail.getHarga() * detail.getJumlah());
+            detailStmt.executeUpdate();
+            i++;
         }
+        
+
+        //con.commit(); // Commit transaction
+    } catch (SQLException e) {
+        //con.rollback(); // Rollback jika terjadi kesalahan
+        throw new Exception("Gagal menyimpan transaksi: " + e.getMessage());
+    } finally {
+        con.setAutoCommit(true); // Set autocommit back to true
+        con.close(); // Pastikan koneksi ditutup
     }
+}
+
+
 
     // Mendapatkan semua transaksi dari database
     public ArrayList<transaksi> getAll() {
@@ -116,6 +129,20 @@ public class transaksi {
     }
 
     // Getters and setters
+    public String getMaxId() {
+        String query = "SELECT MAX(id) FROM transaksi";
+        try (PreparedStatement ps = con.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                String lastId = rs.getString(1);
+                int nextId = Integer.parseInt(lastId.replaceAll("\\D", "")) + 1;
+                return String.format("TR%03d", nextId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "TR001"; // Jika tabel kosong, mulai dari TR001
+    }
+    
     public String getId() {
         return id;
     }

@@ -5,6 +5,8 @@
 package controllers;
 
 import java.io.IOException;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.ServletException;
@@ -13,7 +15,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import models.InventarisBarang;
 import models.Kasir;
+import models.detailTransaksi;
+import models.transaksi;
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 @WebServlet(name = "KasirController", urlPatterns = {"/KasirController"})
 public class KasirController extends HttpServlet {
@@ -30,6 +42,8 @@ public class KasirController extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
 
+        // Inisialisasi objek transaksi
+        transaksi tr = new transaksi();
         // Ambil action dari parameter
         String action = request.getParameter("action");
 
@@ -67,13 +81,20 @@ public class KasirController extends HttpServlet {
                 session.setAttribute("productList", productList);
             }
         } else if ("calculate".equals(action)) {
+
             // Hitung total harga
             double totalAmount = 0;
             for (Map.Entry<String, Map<String, String>> entry : productList.entrySet()) {
                 Map<String, String> product = entry.getValue();
+//                String kodeBarang = product.get("kodeBarang");
                 int qty = Integer.parseInt(product.get("quantity"));
                 double prc = Double.parseDouble(product.get("price")); // Gunakan Double untuk price
+
+                // Menambahkan detail transaksi
+//                detailTransaksi detail = new detailTransaksi(kodeBarang, qty, prc);
+//                tr.tambahDetailTransaksi(detail);
                 totalAmount += qty * prc;
+                session.setAttribute("totalPrice", totalAmount);
             }
 
             // Ambil nominal pembayaran
@@ -91,8 +112,39 @@ public class KasirController extends HttpServlet {
             } else {
                 request.setAttribute("error", "Nominal uang harus diisi.");
             }
+        } else if ("submitTransaction".equals(action)) {
+            // Inisialisasi objek transaksi
+            //ArrayList<String> temp = new ArrayList<>();
+            ArrayList<detailTransaksi> dtl = new ArrayList<>();
+            // Menambahkan detail transaksi berdasarkan productList
+            int i = 1;
+            for (Map.Entry<String, Map<String, String>> entry : productList.entrySet()) {
+                Map<String, String> product = entry.getValue();
+                Date tanggalTransaksi = Date.valueOf(LocalDate.now());
+                String barangId = product.get("productCode");
+                //temp.add(barangId);
+                int qBarang = Integer.parseInt(product.get("quantity"));
+                double harga = Double.valueOf(product.get("price"));
+                detailTransaksi dt = new detailTransaksi(String.valueOf(i), barangId, qBarang, harga);
+                dtl.add(dt);
+                i++;
+                double totalAmount = (double) session.getAttribute("totalPrice");
+                tr = new transaksi(tr.getMaxId(), tanggalTransaksi, totalAmount, "kasir");
+            }
+            tr.setDetailTransaksiList(dtl);
+            // Simpan transaksi
+            try {
+                tr.simpanTransaksi();
+                request.setAttribute("successMessage", "Transaksi berhasil disimpan.");
+            } catch (Exception e) {
+                request.setAttribute("errorMessage", "Gagal menyimpan transaksi: " + e.getMessage());
+            }
+
+            // Redirect atau forward ke halaman sesuai hasil
+            request.getRequestDispatcher("kasir.jsp").forward(request, response);
         }
-        // Redirect ke halaman kasir.jsp
+
+//        // Redirect ke halaman kasir.jsp
         response.sendRedirect("kasir.jsp");
     }
 }

@@ -41,10 +41,16 @@ public class detailTransaksi {
         this.jumlah = jumlah;
         this.harga = harga;
     }
+    
+    public detailTransaksi(String id, int jumlah, double harga) {
+        this.id = id;
+        this.jumlah = jumlah;
+        this.harga = harga;
+    }
 
     // Simpan detail transaksi ke database
     public void simpanDetail(Connection con, String transaksiId) throws SQLException {
-        String query = "INSERT INTO " + table + " (transaksi_id, barang, jumlah, harga) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO " + table + " (id, transaksi_id, barang, jumlah, harga) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(query)) {
             ps.setString(1, transaksiId);
             ps.setString(2, barangID);

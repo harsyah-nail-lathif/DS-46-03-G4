@@ -40,7 +40,25 @@
                 double paidAmount = Double.parseDouble(paidAmountParam);
                 balance = paidAmount - totalAmount;
             }
+
+            // Simpan productList ke session
+            session.setAttribute("totalPrice", totalAmount);
+            session.setAttribute("productList", productList);
         %>
+
+        <!-- result.jsp -->
+        <% if (request.getAttribute("successMessage") != null) {%>
+        <div class="alert alert-success">
+            <%= request.getAttribute("successMessage")%>
+        </div>
+        <% } %>
+
+        <% if (request.getAttribute("errorMessage") != null) {%>
+        <div class="alert alert-danger">
+            <%= request.getAttribute("errorMessage")%>
+        </div>
+        <% } %>
+
 
         <div class="container mt-4">
             <h2 class="text-center mb-4">Halaman Kasir</h2>
@@ -64,6 +82,7 @@
                                     </div>
                                     <div class="col-md-2">
                                         <label class="fw-bold">&nbsp;</label>
+                                        <input type="hidden" name="addProduct" value="yes">
                                         <button type="submit" class="btn btn-success form-control">Add</button>
                                     </div>
                                 </div>
@@ -156,12 +175,13 @@
                             <input type="hidden" name="action" value="logout">
                             <button type="submit" class="btn btn-danger">Logout</button>
                         </form>
-                        <a href="transaksiController?action=view" class="btn btn-primary">Lihat Transaksi</a>
+                        <a href="transaksiController?action=null" class="btn btn-primary">Lihat Transaksi</a>
+                        <a href="Laporan.jsp" class="btn btn-primary">Lihat Laporan</a>
                     </div>
                     <div class="text-end mb-3">
-                        <form method="POST" action="transaksiController">
+                        <form method="POST" action="KasirController">
                             <input type="hidden" name="action" value="submitTransaction">
-                            <input type="hidden" name="totalAmount" value="<%= totalAmount%>"> <!-- Total transaksi -->
+                            <input type="hidden" name="productList" value="<%= productList%>"> <!-- Menambahkan productList ke form -->
                             <button type="submit" class="btn btn-primary mt-3">Submit Transaksi</button>
                         </form>
                     </div>
