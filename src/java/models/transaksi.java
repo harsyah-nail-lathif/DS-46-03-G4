@@ -38,7 +38,16 @@ public class transaksi {
     }
 
     public transaksi(String id, Date tanggalTransaksi, double totalHarga, String kasirID) {
-        this();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", "");
+            message = "Database connected.";
+        } catch (ClassNotFoundException | SQLException e) {
+            message = e.getMessage();
+        }
+        this.table = "transaksi";
+        this.primaryKey = "id";
+        this.detailTransaksiList = new ArrayList<>();
         this.id = id;
         this.tanggalTransaksi = tanggalTransaksi;
         this.totalHarga = totalHarga;
@@ -59,31 +68,24 @@ public class transaksi {
         // Simpan transaksi utama
         String insertTransaksi = "INSERT INTO transaksi (id, tanggal_transaksi, total_harga, kasir_id) VALUES (?, ?, ?, ?)";
         PreparedStatement pstmt = con.prepareStatement(insertTransaksi, Statement.RETURN_GENERATED_KEYS);
-        pstmt.setString(1, getMaxId());
+        pstmt.setString(1, this.id);
         pstmt.setDate(2, this.tanggalTransaksi);
         pstmt.setDouble(3, this.totalHarga);
         pstmt.setString(4, this.kasirID);
         pstmt.executeUpdate();
-
-        // Simpan detail transaksi
-        String insertDetail = "INSERT INTO detail_transaksi (id, transaksi_id, barang, jumlah, harga) VALUES (?, ?, ?, ?, ?)";
-        PreparedStatement detailStmt = con.prepareStatement(insertDetail);
         
-        int i = 1;
-        for (detailTransaksi detail : detailTransaksiList) {
-            detailStmt.setString(1, String.valueOf(i));
-            detailStmt.setString(2, this.id);
-            detailStmt.setString(3, detail.getBarangID());
-            detailStmt.setInt(4, detail.getJumlah());
-            detailStmt.setDouble(5, detail.getHarga() * detail.getJumlah());
-            detailStmt.executeUpdate();
-            i++;
+        if(detailTransaksiList.isEmpty()){
+            message = "Array detail transaksi kosong";
+        }else{
+            for (detailTransaksi detail : detailTransaksiList) {
+                detail.simpanDetail();
+            }
         }
         
-
         //con.commit(); // Commit transaction
     } catch (SQLException e) {
         //con.rollback(); // Rollback jika terjadi kesalahan
+        message = "Gagal menyimpan transaksi: " + e.getMessage();
         throw new Exception("Gagal menyimpan transaksi: " + e.getMessage());
     } finally {
         con.setAutoCommit(true); // Set autocommit back to true
@@ -183,4 +185,11 @@ public class transaksi {
         this.detailTransaksiList = detailTransaksiList;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

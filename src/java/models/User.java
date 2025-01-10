@@ -26,6 +26,11 @@ public class User {
     private final String DB_PASSWORD = "";
 
     public User() {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        }catch(ClassNotFoundException e){
+            
+        }
         // Default constructor
     }
 
@@ -52,8 +57,10 @@ public class User {
     // Method untuk login
     public static User login(String username, String password) throws SQLException {
         String query = "SELECT * FROM users WHERE username = ? AND password = MD5(?)";
+        
         try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", "");
              PreparedStatement ps = con.prepareStatement(query)) {
+            
             ps.setString(1, username);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {

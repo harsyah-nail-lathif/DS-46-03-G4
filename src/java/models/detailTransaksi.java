@@ -16,6 +16,7 @@ public class detailTransaksi {
 
     private String id;
     private String barangID;
+    private String transaksi;
     private int jumlah;
     private double harga;
     private String table;
@@ -35,8 +36,18 @@ public class detailTransaksi {
         this.primary = "id";
     }
 
-    public detailTransaksi(String id, String barang, int jumlah, double harga) {
+    public detailTransaksi(String id, String transaksi,String barang, int jumlah, double harga) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/db_barang", "root", "");
+            message = "Database connected.";
+        } catch (ClassNotFoundException | SQLException e) {
+            message = e.getMessage();
+        }
+        this.table = "detail_transaksi";
+        this.primary = "id";
         this.id = id;
+        this.transaksi = transaksi;
         this.barangID = barang;
         this.jumlah = jumlah;
         this.harga = harga;
@@ -49,13 +60,14 @@ public class detailTransaksi {
     }
 
     // Simpan detail transaksi ke database
-    public void simpanDetail(Connection con, String transaksiId) throws SQLException {
+    public void simpanDetail() throws SQLException {
         String query = "INSERT INTO " + table + " (id, transaksi_id, barang, jumlah, harga) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(query)) {
-            ps.setString(1, transaksiId);
-            ps.setString(2, barangID);
-            ps.setInt(3, jumlah);
-            ps.setDouble(4, harga);
+            ps.setString(1, id);
+            ps.setString(2, transaksi);
+            ps.setString(3, barangID);
+            ps.setInt(4, jumlah);
+            ps.setDouble(5, harga);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -73,6 +85,7 @@ public class detailTransaksi {
                 while (rs.next()) {
                     detailTransaksi detail = new detailTransaksi(
                             rs.getString("id"),
+                            rs.getString("transaksi_id"),
                             rs.getString("barang"),
                             rs.getInt("jumlah"),
                             rs.getDouble("harga")
@@ -91,6 +104,7 @@ public class detailTransaksi {
         try {
             return new detailTransaksi(
                     rs.getString("id"),
+                    rs.getString("transaksi_id"),
                     rs.getString("barang"),
                     rs.getInt("jumlah"),
                     rs.getDouble("harga")
@@ -100,8 +114,28 @@ public class detailTransaksi {
             return null;
         }
     }
+    
+    public String getMaxId() {
+        String query = "SELECT MAX(id) FROM detail_transaksi";
+        try (PreparedStatement ps = con.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                String lastId = rs.getString(1);
+                int nextId = Integer.parseInt(lastId.replaceAll("\\D", "")) + 1;
+                return String.format("DT%03d", nextId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "DT001"; // Jika tabel kosong, mulai dari TR001
+    }
 
     // Getters and setters
+    
+    
+    public String getMessage() {
+        return message;
+    }
+
     public String getId() {
         return id;
     }
@@ -129,4 +163,10 @@ public class detailTransaksi {
     public void setHarga(double harga) {
         this.harga = harga;
     }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+    
+    
 }

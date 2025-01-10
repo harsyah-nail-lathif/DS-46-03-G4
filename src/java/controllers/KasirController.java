@@ -9,12 +9,12 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import models.InventarisBarang;
 import models.Kasir;
 import models.detailTransaksi;
@@ -116,6 +116,7 @@ public class KasirController extends HttpServlet {
             // Inisialisasi objek transaksi
             //ArrayList<String> temp = new ArrayList<>();
             ArrayList<detailTransaksi> dtl = new ArrayList<>();
+            detailTransaksi t = new detailTransaksi();
             // Menambahkan detail transaksi berdasarkan productList
             int i = 1;
             for (Map.Entry<String, Map<String, String>> entry : productList.entrySet()) {
@@ -124,12 +125,16 @@ public class KasirController extends HttpServlet {
                 String barangId = product.get("productCode");
                 //temp.add(barangId);
                 int qBarang = Integer.parseInt(product.get("quantity"));
-                double harga = Double.valueOf(product.get("price"));
-                detailTransaksi dt = new detailTransaksi(String.valueOf(i), barangId, qBarang, harga);
-                dtl.add(dt);
-                i++;
+                double harga = Double.parseDouble(product.get("price"));
                 double totalAmount = (double) session.getAttribute("totalPrice");
-                tr = new transaksi(tr.getMaxId(), tanggalTransaksi, totalAmount, "kasir");
+                    detailTransaksi dt = new detailTransaksi(t.getMaxId()+i, tr.getMaxId(), barangId, qBarang, harga*qBarang);
+                    dtl.add(dt);
+                    tr.setId(tr.getMaxId());
+                    tr.setTanggalTransaksi(tanggalTransaksi);
+                    tr.setTotalHarga(totalAmount);
+                    String kasir = (String) session.getAttribute("user");
+                    tr.setKasirID(kasir);
+                    i++;
             }
             tr.setDetailTransaksiList(dtl);
             // Simpan transaksi
@@ -137,7 +142,7 @@ public class KasirController extends HttpServlet {
                 tr.simpanTransaksi();
                 request.setAttribute("successMessage", "Transaksi berhasil disimpan.");
             } catch (Exception e) {
-                request.setAttribute("errorMessage", "Gagal menyimpan transaksi: " + e.getMessage());
+                request.setAttribute("errorMessage", "Gagal menyimpan transaksi: " + e.getMessage() + " ;" + tr.getMessage());
             }
 
             // Redirect atau forward ke halaman sesuai hasil
